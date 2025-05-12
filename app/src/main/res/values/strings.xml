@@ -15,5 +15,9 @@
     <string name="email_title">Email</string>
     <string name="password_title">Contraseña</string>
     <string name="full_name_title">Nombre completo</string>
+    <string name="already_have_account">¿Ya tienes una cuenta?</string>
+    <string name="name_error">Error con el nombre</string>
+    <string name="profile_updated_successfully">Perfil actualizado con exito</string>
+    <string name="update_profile">Actualizar perfil\n</string>
 
 </resources>

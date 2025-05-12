@@ -1,6 +1,7 @@
 package com.example.taller3compumovil.screens
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,13 +11,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.example.taller3compumovil.R
@@ -27,6 +33,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -34,10 +43,15 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taller3compumovil.components.CameraComponent
+import com.example.taller3compumovil.data.User
+import com.example.taller3compumovil.viewModel.FirebaseViewModel
 
 @Composable
-fun registerScreen(onLoginSuccess: () -> Unit, modifier: Modifier) {
+fun registerScreen(onRegisterSuccess: () -> Unit,
+                   onAlreadyHasAccount: () -> Unit,
+                   viewModel: FirebaseViewModel) {
     var userFullName by remember { mutableStateOf("") }
     var userEmail by remember { mutableStateOf("") }
     var userPassword by remember { mutableStateOf("") }
@@ -47,8 +61,10 @@ fun registerScreen(onLoginSuccess: () -> Unit, modifier: Modifier) {
     var passwordVisible by remember { mutableStateOf(false) }
     var profilePic by rememberSaveable { mutableStateOf(Uri.EMPTY) }
     var hasProfilePic by rememberSaveable { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     Column (horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
             .padding(10.dp)
     ){
         Text(stringResource(R.string.register_title),
@@ -126,9 +142,57 @@ fun registerScreen(onLoginSuccess: () -> Unit, modifier: Modifier) {
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
         )
+
+        Text(stringResource(R.string.already_have_account),
+            style = TextStyle(
+                fontWeight = FontWeight.Light
+            ) )
+        Spacer(modifier = Modifier.height(10.dp))
+        TextButton(onClick = onAlreadyHasAccount) {
+            Text(stringResource(R.string.login_title),
+                style = TextStyle(
+                    fontWeight = FontWeight.Light
+                ) )
+        }
+
         Spacer(modifier = Modifier.height(20.dp))
-        Button(onLoginSuccess ) {
-            Text(stringResource(R.string.register_button_text))
+        Button(
+            onClick = {
+                if (userFullName.isNotEmpty() && userEmail.isNotEmpty() && userPassword.isNotEmpty() && !isEmailError && hasProfilePic) {
+                    isLoading = true
+                    viewModel.register(userEmail, userPassword, userFullName, profilePic) { error ->
+                        isLoading = false
+                        if (error == null) {
+                            // Registro exitoso, también autentica al usuario
+                            viewModel.authenticate(userEmail, userPassword) { authError ->
+                                if (authError == null) {
+
+                                }
+                            }
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Error: ${error.localizedMessage}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                } else {
+                    isEmailError = userEmail.isEmpty()
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .height(50.dp),
+            enabled = !isLoading
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(color = Color.White)
+            } else {
+                Text(
+                    text = stringResource(R.string.register_button_text),
+                )
+            }
         }
     }
 }

@@ -8,4 +8,5 @@ data class User(
     val password: String = "",
     val online: Boolean = false,
     val mapPosition: LatLng = LatLng(0.0, 0.0),
+    val photoUrl: String = "",
 )
