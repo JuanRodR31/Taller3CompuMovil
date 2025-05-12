@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">Taller3CompuMovil</string>
+    <string name="permission_camera_rationale_message">Hola, Necesitamos el permiso a la camara asi podremos registrarte</string>
+    <string name="permission_camera_no_permission_message">Hola, nececitamos el permiso de camara para poderte registrar</string>
+    <string name="permission_camera_button">Desbloquear la camara</string>
+    <string name="photo_taken_success_label">Foto tomada con exito</string>
+    <string name="register_button_text">Registrarse</string>
+    <string name="login_button_text">Iniciar sesion</string>
+    <string name="text_field_full_name_label">Ingrese aqui su nombre completo</string>
+    <string name="text_field_email_label">Ingrese aqui su email</string>
+    <string name="text_field_password_label">Ingrese aqui su contraseña</string>
+    <string name="register_title">Registro</string>
+    <string name="login_title">Iniciar Sesion</string>
+    <string name="no_account_text">¿No tienes una cuenta?</string>
+    <string name="email_title">Email</string>
+    <string name="password_title">Contraseña</string>
+    <string name="full_name_title">Nombre completo</string>
+
 </resources>

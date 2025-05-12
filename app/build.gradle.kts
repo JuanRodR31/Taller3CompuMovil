@@ -48,7 +48,37 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    //permissions
+    implementation(libs.accompanist.permissions)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.core.ktx)
+
+    //firebase
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.storage)
+
+    //camerax
+    implementation(libs.camera.core)
+    implementation(libs.camera.camera2)
+    implementation(libs.camera.lifecycle)
+    implementation(libs.camera.video)
+    implementation(libs.camera.view)
+    implementation(libs.camera.extensions)
+    implementation(libs.coil.compose)
+
+    //maps
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.maps)
+
+    //Material
+
+    implementation(libs.compose.material.icons.extended)
+
+    //defaultLibraries
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -56,4 +86,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    //Coil
+
+    //image lib
+    implementation(libs.coil.network.ktor3)
 }
