@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             Taller3CompuMovilTheme {
-                MapScreen(navToProfile = {}, navLogout = {})
+                NavigationStack()
             }
         }
     }

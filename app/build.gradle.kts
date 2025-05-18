@@ -79,6 +79,9 @@ dependencies {
     //Material
 
     implementation(libs.compose.material.icons.extended)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
 
     //defaultLibraries
     testImplementation(libs.junit)

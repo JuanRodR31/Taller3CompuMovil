@@ -2,6 +2,7 @@ package com.example.taller3compumovil.screens
 
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,7 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Login
@@ -63,9 +66,11 @@ fun registerScreen(onRegisterSuccess: () -> Unit,
     var hasProfilePic by rememberSaveable { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val scrollState = rememberScrollState()
     Column (horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
             .padding(10.dp)
+            .verticalScroll(scrollState)
     ){
         Text(stringResource(R.string.register_title),
             style = TextStyle(
