@@ -1,6 +1,7 @@
 package com.example.taller3compumovil.screens
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -27,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -42,6 +44,7 @@ fun loginScreen (onLoginSuccess: () -> Unit,
                  onRegisterClick: () -> Unit,
                  viewModel: FirebaseViewModel,
                  modifier: Modifier) {
+    val context = LocalContext.current
     var userEmail by remember { mutableStateOf("") }
     var userPassword by remember { mutableStateOf("") }
     var isEmailError by remember { mutableStateOf(false) }
@@ -111,8 +114,22 @@ fun loginScreen (onLoginSuccess: () -> Unit,
                 ) )
         }
         Spacer(modifier = Modifier.height(20.dp))
-        Button(onLoginSuccess ) {
+        Button(onClick = {
+            if(userPassword!= null && userEmail!=null){
+                viewModel.authenticate(userEmail, userPassword) { error ->
+                    if (error == null) {
+                        onLoginSuccess()
+                    } else {
+                        Toast.makeText(context, error.message, Toast.LENGTH_LONG).show()
+                    }
+                }
+            }else{
+                Toast.makeText(context, "Ingrese las credenciales", Toast.LENGTH_LONG).show()
+            }
+
+        }) {
             Text(stringResource(R.string.login_button_text))
         }
+
     }
 }
