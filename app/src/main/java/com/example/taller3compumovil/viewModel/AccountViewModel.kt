@@ -1,14 +1,32 @@
 package com.example.taller3compumovil.viewModel
 
+import android.Manifest
 import android.app.Application
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Looper
+import androidx.annotation.RequiresPermission
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
+import com.example.taller3compumovil.data.SimpleLatLng
 import com.example.taller3compumovil.data.User
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.GenericTypeIndicator
+import com.google.firebase.database.MutableData
+import com.google.firebase.database.ServerValue
+import com.google.firebase.database.Transaction
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.google.firebase.storage.storage
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -217,4 +235,114 @@ class FirebaseViewModel(application: Application) : AndroidViewModel(application
             }
         }
     }
+
+    private val _onlineUsers = MutableStateFlow<List<User>>(emptyList())
+    val onlineUsers: StateFlow<List<User>> = _onlineUsers.asStateFlow()
+
+    private val fusedLocationClient by lazy {
+        LocationServices.getFusedLocationProviderClient(application)
+    }
+
+    private val locationCallback = object : LocationCallback() {
+        override fun onLocationResult(result: LocationResult) {
+            result.lastLocation?.let { location ->
+                val newPosition = SimpleLatLng(
+                    location.latitude,
+                    location.longitude
+                )
+
+                // Actualizar en Firebase y estado local
+                updateLocation(newPosition)
+                _uiState.update {
+                    it.copy(
+                        userProfile = it.userProfile.copy(
+                            mapPosition = it.userProfile.mapPosition + newPosition
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    init {
+        setupOnlineUsersListener()
+    }
+
+    private fun setupOnlineUsersListener() {
+        database.getReference("users")
+            .orderByChild("online").equalTo(true)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val users = snapshot.children.mapNotNull {
+                        it.getValue(User::class.java)
+                    }
+                    _onlineUsers.value = users
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // Manejar error
+                }
+            })
+    }
+
+    fun updateOnlineStatus(online: Boolean) {
+        userRef.child("online").setValue(online)
+    }
+
+    fun startLocationUpdates() {
+        if (checkLocationPermission()) {
+            // Lógica para iniciar actualizaciones
+            val locationRequest = LocationRequest.create().apply {
+                interval = 10000
+                fastestInterval = 5000
+                priority = Priority.PRIORITY_HIGH_ACCURACY
+            }
+
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                Looper.getMainLooper()
+            )
+        }
+    }
+
+    private fun checkLocationPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            getApplication(),
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    fun stopLocationUpdates() {
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+    }
+
+    private fun updateLocation(position: SimpleLatLng) {
+        userRef.child("mapPosition").runTransaction(object : Transaction.Handler {
+            override fun doTransaction(mutableData: MutableData): Transaction.Result {
+                val currentPositions = mutableData.getValue(object : GenericTypeIndicator<List<Map<String, Any>>>() {})
+                    ?: emptyList()
+
+                val newPosition = mapOf(
+                    "latitude" to position.latitude,
+                    "longitude" to position.longitude,
+                    "timestamp" to ServerValue.TIMESTAMP
+                )
+
+                mutableData.value = currentPositions + newPosition
+                return Transaction.success(mutableData)
+            }
+
+            override fun onComplete(
+                error: DatabaseError?,
+                committed: Boolean,
+                currentData: DataSnapshot?
+            ) {
+                // Manejar completado
+            }
+        })
+    }
+
+
 }
+

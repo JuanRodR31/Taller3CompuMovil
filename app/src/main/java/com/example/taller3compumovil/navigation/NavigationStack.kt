@@ -106,7 +106,8 @@ fun NavigationStack(
                         navToProfile = {
                             navController.navigate(Routes.Profile)
                         },
-                        navLogout = logout
+                        navLogout = logout,
+                        viewModel = accountViewModel
                     )
                 }
                 composable<Routes.Profile> {
