@@ -111,7 +111,8 @@ fun NavigationStack(
                 }
                 composable<Routes.Profile> {
                     ProfileScreen(
-                        viewModel = accountViewModel
+                        viewModel = accountViewModel,
+                        navController = navController
                     )
                 }
             }

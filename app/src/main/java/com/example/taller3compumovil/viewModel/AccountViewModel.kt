@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import com.example.taller3compumovil.data.User
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import com.google.firebase.database.database
@@ -25,8 +26,13 @@ interface AccountService {
     fun register(
         email: String,
         password: String,
-        fullName: String,
+        fullName: User,
         profilePic: Uri,
+        onResult: (Throwable?) -> Unit
+    )
+    fun updatePassword(
+        currentPassword: String,
+        newPassword: String,
         onResult: (Throwable?) -> Unit
     )
 
@@ -72,21 +78,50 @@ class FirebaseViewModel(application: Application) : AndroidViewModel(application
             }
         }
     }
+    override fun updatePassword(
+        currentPassword: String,
+        newPassword: String,
+        onResult: (Throwable?) -> Unit
+    ) {
+        val user = auth.currentUser ?: run {
+            onResult(Exception("Usuario no autenticado"))
+            return
+        }
+
+        // Reautenticación requerida por Firebase
+        val credential = EmailAuthProvider.getCredential(user.email!!, currentPassword)
+
+        user.reauthenticate(credential)
+            .addOnCompleteListener { reauthTask ->
+                if (reauthTask.isSuccessful) {
+                    user.updatePassword(newPassword)
+                        .addOnCompleteListener { updateTask ->
+                            if (updateTask.isSuccessful) {
+                                onResult(null)
+                            } else {
+                                onResult(updateTask.exception)
+                            }
+                        }
+                } else {
+                    onResult(reauthTask.exception)
+                }
+            }
+    }
 
     override fun register(
         email: String,
         password: String,
-        fullName: String,
+        currentUser: User,
         profilePic: Uri,
         onResult: (Throwable?) -> Unit
     ) {
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                val tmpUser = User(fullName)
                 val userRef = database.getReference("users/${auth.currentUser?.uid}")
 
-                userRef.setValue(tmpUser).addOnCompleteListener { dbTask ->
+                userRef.setValue(currentUser).addOnCompleteListener { dbTask ->
                     if (dbTask.isSuccessful) {
+                        /*
                         val storageRef =
                             storage.getReference("users/${auth.currentUser?.uid}/profile.jpg")
 
@@ -95,7 +130,7 @@ class FirebaseViewModel(application: Application) : AndroidViewModel(application
                                 _uiState.update { currentState ->
                                     currentState.copy(
                                         user = auth.currentUser,
-                                        userProfile = tmpUser
+                                        userProfile = currentUser
                                     )
                                 }
                                 onResult(null)
@@ -103,6 +138,16 @@ class FirebaseViewModel(application: Application) : AndroidViewModel(application
                                 onResult(uploadTask.exception)
                             }
                         }
+
+                         */
+                        _uiState.update { currentState ->
+                            currentState.copy(
+                                user = auth.currentUser,
+                                userProfile = currentUser
+                            )
+                        }
+
+                        onResult(null)
                     } else {
                         onResult(dbTask.exception)
                     }
@@ -131,22 +176,34 @@ class FirebaseViewModel(application: Application) : AndroidViewModel(application
         _uiState.update { currentState ->
             currentState.copy(user = null)
         }
+        //QUITAR UBICACION
         onResult()
     }
 
     override fun getUser(onResult: (User) -> Unit) {
-        _uiState.update { currentState ->
-            currentState.copy(user = auth.currentUser)
+        val currentUser = auth.currentUser
+        if (currentUser == null) {
+            onResult(User())
+            return
         }
+        val userRef = database.getReference("users/${currentUser.uid}")
+
+        _uiState.update { currentState ->
+            currentState.copy(user = currentUser)
+        }
+
         userRef.get().addOnSuccessListener { snapshot ->
             snapshot.getValue(User::class.java)?.let { tmpUser ->
                 _uiState.update { currentState ->
                     currentState.copy(userProfile = tmpUser)
                 }
                 onResult(tmpUser)
-            }
+            } ?: onResult(User())
+        }.addOnFailureListener {
+            onResult(User())
         }
     }
+
 
     override fun updateUser(
         newInfo: User,

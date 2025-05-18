@@ -1,12 +1,16 @@
 package com.example.taller3compumovil.data
 
-import com.google.android.gms.maps.model.LatLng
 
 data class User(
     val fullName: String = "",
     val email: String = "",
-    val password: String = "",
+    val phone: Long=0,
     val online: Boolean = false,
-    val mapPosition: LatLng = LatLng(0.0, 0.0),
+    val mapPosition: List<SimpleLatLng> = listOf(SimpleLatLng(0.0, 0.0)),
     val photoUrl: String = "",
 )
+data class SimpleLatLng(
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0
+)
+
