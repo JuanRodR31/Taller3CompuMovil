@@ -192,7 +192,7 @@ fun registerScreen(onRegisterSuccess: () -> Unit,
                 onValueChange = {
                     userPhoneText = it
                     val parsed = it.toLongOrNull()
-                    isPhoneError = parsed == null || it.length < 7 // Puedes ajustar la longitud mínima
+                    isPhoneError = parsed == null || it.length < 7
                     userPhone = parsed
                 },
                 label = { Text(stringResource(R.string.text_field_phone_label)) },

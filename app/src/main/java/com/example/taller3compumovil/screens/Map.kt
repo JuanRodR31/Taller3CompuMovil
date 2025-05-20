@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,7 +38,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
@@ -47,6 +45,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.random.Random
 
 
 @Composable
@@ -87,7 +86,7 @@ fun MapScreen(
     }
 
     Column(
-        modifier = Modifier
+        modifier
             .fillMaxSize()
             .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -113,7 +112,7 @@ fun MapScreen(
         Spacer(Modifier.height(24.dp))
 
         GoogleMap(
-            modifier = Modifier.fillMaxSize(0.7f),
+            modifier.fillMaxSize(0.7f),
             cameraPositionState = cameraPositionState,
             properties = MapProperties(
                 mapStyleOptions = MapStyleOptions.loadRawResourceStyle(
@@ -134,11 +133,19 @@ fun MapScreen(
                         LatLng(pos.latitude, pos.longitude)
                     }
                     if (path.size > 1) {
+                        val randomColor = Color(
+                            Random.nextFloat(),
+                            Random.nextFloat(),
+                            Random.nextFloat(),
+                            1f
+                        )
+
                         Polyline(
                             points = path,
-                            color = Color.Red,
+                            color = randomColor,
                             width = 5f
                         )
+
                     }
                 }
             }
