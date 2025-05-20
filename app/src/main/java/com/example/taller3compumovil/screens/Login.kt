@@ -20,6 +20,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.stringResource
 import com.example.taller3compumovil.R
 import androidx.compose.runtime.mutableStateOf
@@ -37,8 +38,14 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.taller3compumovil.components.CameraComponent
+import com.example.taller3compumovil.components.NoLocationPermissionMessage
 import com.example.taller3compumovil.viewModel.FirebaseViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun loginScreen (onLoginSuccess: () -> Unit,
                  onRegisterClick: () -> Unit,
@@ -50,85 +57,110 @@ fun loginScreen (onLoginSuccess: () -> Unit,
     var isEmailError by remember { mutableStateOf(false) }
     var isPasswordError by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
-    Column (horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.fillMaxWidth()
-            .padding(10.dp)
-    ){
-        Text(stringResource(R.string.login_title),
-            style = TextStyle(
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold
-            ) )
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(stringResource(R.string.email_title),
-            style = TextStyle(
-                fontWeight = FontWeight.Bold
-            ) )
-        OutlinedTextField(
-            value = userEmail,
-            onValueChange = {
-                userEmail = it
-                isEmailError = it.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(it).matches()
-            },
-            label = { Text(stringResource(R.string.text_field_email_label)) },
-            modifier = Modifier.fillMaxWidth(0.8f),
-            isError = isEmailError,
-            supportingText = {
-                if (isEmailError) {
-                    Text("Ingresa un email válido")
-                }
-            },
-            singleLine = true
+
+
+
+
+    val locationPermissionState = rememberPermissionState(android.Manifest.permission.ACCESS_FINE_LOCATION)
+
+    val locationPermissionGranted = locationPermissionState.status.isGranted
+
+    LaunchedEffect(Unit) {
+        if (!locationPermissionGranted) {
+            locationPermissionState.launchPermissionRequest()
+        }
+    }
+
+    if (!locationPermissionGranted) {
+        NoLocationPermissionMessage(
+            shouldShowRationale = locationPermissionState.status.shouldShowRationale,
+            message = stringResource(R.string.location_permission_rationale_message),
+                    onRequestPermission = {
+                locationPermissionState.launchPermissionRequest()
+            }
         )
-        Text(stringResource(R.string.password_title),
-            style = TextStyle(
-                fontWeight = FontWeight.Bold
-            ) )
-        OutlinedTextField(
-            value = userPassword,
-            onValueChange = { userPassword = it },
-            label = { Text(stringResource(R.string.text_field_password_label)) },
-            modifier = Modifier.fillMaxWidth(0.8f),
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(
-                        imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                        contentDescription = "Toggle password visibility"
-                    )
-                }
-            },
-            isError = isPasswordError,
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-        )
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(stringResource(R.string.no_account_text),
-            style = TextStyle(
-                fontWeight = FontWeight.Bold
-            ) )
-        TextButton(onClick = onRegisterClick) {
-            Text(stringResource(R.string.register_button_text),
+    }else{
+        Column (horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = modifier.fillMaxWidth()
+                .padding(20.dp)
+        ){
+            Text(stringResource(R.string.login_title),
+                style = TextStyle(
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Bold
+                ) )
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(stringResource(R.string.email_title),
                 style = TextStyle(
                     fontWeight = FontWeight.Bold
                 ) )
-        }
-        Spacer(modifier = Modifier.height(20.dp))
-        Button(onClick = {
-            if(userPassword!= null && userEmail!=null){
-                viewModel.authenticate(userEmail, userPassword) { error ->
-                    if (error == null) {
-                        onLoginSuccess()
-                    } else {
-                        Toast.makeText(context, error.message, Toast.LENGTH_LONG).show()
+            OutlinedTextField(
+                value = userEmail,
+                onValueChange = {
+                    userEmail = it
+                    isEmailError = it.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(it).matches()
+                },
+                label = { Text(stringResource(R.string.text_field_email_label)) },
+                modifier = Modifier.fillMaxWidth(0.8f),
+                isError = isEmailError,
+                supportingText = {
+                    if (isEmailError) {
+                        Text(stringResource(R.string.email_invalid_error))
                     }
+                },
+                singleLine = true
+            )
+            Text(stringResource(R.string.password_title),
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold
+                ) )
+            OutlinedTextField(
+                value = userPassword,
+                onValueChange = { userPassword = it },
+                label = { Text(stringResource(R.string.text_field_password_label)) },
+                modifier = Modifier.fillMaxWidth(0.8f),
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            contentDescription = stringResource(R.string.toggle_password_visibility)
+                        )
+                    }
+                },
+                isError = isPasswordError,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(stringResource(R.string.no_account_text),
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold
+                ) )
+            TextButton(onClick = onRegisterClick) {
+                Text(stringResource(R.string.register_button_text),
+                    style = TextStyle(
+                        fontWeight = FontWeight.Bold
+                    ) )
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            Button(onClick = {
+                if(userPassword!= null && userEmail!=null){
+                    viewModel.authenticate(userEmail, userPassword) { error ->
+                        if (error == null) {
+                            onLoginSuccess()
+                        } else {
+                            Toast.makeText(context, error.message, Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }else{
+                    Toast.makeText(context, context.getString(R.string.empty_credentials_warning), Toast.LENGTH_LONG).show()
                 }
-            }else{
-                Toast.makeText(context, "Ingrese las credenciales", Toast.LENGTH_LONG).show()
+
+            }) {
+                Text(stringResource(R.string.login_button_text))
             }
 
-        }) {
-            Text(stringResource(R.string.login_button_text))
         }
 
     }

@@ -80,6 +80,10 @@ class FirebaseViewModel(application: Application) : AndroidViewModel(application
     private var storage = Firebase.storage
     val userRef = database.getReference("users/${auth.currentUser?.uid}")
 
+    override fun onCleared() {
+        super.onCleared()
+        stopLocationUpdates()
+    }
     override fun authenticate(
         email: String,
         password: String,
@@ -175,6 +179,22 @@ class FirebaseViewModel(application: Application) : AndroidViewModel(application
             }
         }
     }
+
+    fun resetToCurrentLocation() {
+        if (!checkLocationPermission()) return
+
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            if (location != null) {
+                val currentPosition = mapOf(
+                    "latitude" to location.latitude,
+                    "longitude" to location.longitude,
+                    "timestamp" to ServerValue.TIMESTAMP
+                )
+                userRef.child("mapPosition").setValue(listOf(currentPosition))
+            }
+        }
+    }
+
 
     override fun forgotPassword(
         email: String,

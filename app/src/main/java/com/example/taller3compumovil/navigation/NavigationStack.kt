@@ -3,6 +3,7 @@ package com.example.taller3compumovil.navigation
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -42,7 +43,7 @@ fun NavigationStack(
         }
     }
 
-    Scaffold {
+    Scaffold { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = Routes.Login,
@@ -73,6 +74,7 @@ fun NavigationStack(
         ) {
             // This is the main navigation graph for the app
             val onSuccess = {
+                accountViewModel.resetToCurrentLocation()
                 navController.navigate(Routes.Authorized) {
                     popUpTo(Routes.Login) { inclusive = true }
                 }
@@ -89,12 +91,13 @@ fun NavigationStack(
                         navController.navigate(Routes.Register)
                     },
                     viewModel = accountViewModel,
-                    modifier = modifier
+                    modifier = Modifier.padding(innerPadding)
                 )
             }
             composable<Routes.Register> {
                 registerScreen(onRegisterSuccess = onSuccess,
                     viewModel = accountViewModel,
+                    modifier = Modifier.padding(innerPadding),
                     onAlreadyHasAccount = {
                         navController.navigate(Routes.Login)
                     })
@@ -107,13 +110,15 @@ fun NavigationStack(
                             navController.navigate(Routes.Profile)
                         },
                         navLogout = logout,
-                        viewModel = accountViewModel
+                        viewModel = accountViewModel,
+                        modifier = Modifier.padding(innerPadding)
                     )
                 }
                 composable<Routes.Profile> {
                     ProfileScreen(
                         viewModel = accountViewModel,
-                        navController = navController
+                        navController = navController,
+                        modifier = Modifier.padding(innerPadding)
                     )
                 }
             }

@@ -22,6 +22,38 @@
     <string name="profile_updated_successfully">Perfil actualizado con exito</string>
     <string name="update_profile">Actualizar perfil\n</string>
     <string name="permission_location_button">Permitir ubicación</string>
-
-
+    <string name="location_permission_rationale_message">La aplicación necesita tu ubicación para registrarte correctamente.</string>
+    <string name="email_invalid_error">Ingresa un email válido</string>
+    <string name="toggle_password_visibility">Mostrar u ocultar contraseña</string>
+    <string name="empty_credentials_warning">Ingrese las credenciales</string>
+    <string name="edit_profile">Editar perfil</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="location">Ubicación</string>
+    <string name="user_title">Usuario %1$s</string>
+    <string name="last_update">Última actualización: %1$s</string>
+    <string name="back">Regresar</string>
+    <string name="profile_photo">Foto de perfil</string>
+    <string name="full_name">Nombre completo</string>
+    <string name="phone">Teléfono</string>
+    <string name="phone_error">Teléfono inválido (7-15)</string>
+    <string name="profile_updated">Perfil actualizado</string>
+    <string name="error">Error</string>
+    <string name="save">Guardar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="current_password">Contraseña actual</string>
+    <string name="required_field">Campo obligatorio</string>
+    <string name="new_password">Nueva contraseña</string>
+    <string name="min_6_chars">Mínimo 6 caracteres</string>
+    <string name="confirm_password">Confirmar contraseña</string>
+    <string name="passwords_do_not_match">No coinciden</string>
+    <string name="password_updated">Contraseña actualizada</string>
+    <string name="save_password">Guardar contraseña</string>
+    <string name="change_password">Cambiar contraseña</string>
+    <string name="error_full_name_required">Ingresa un nombre completo</string>
+    <string name="error_invalid_email">Ingresa un email válido</string>
+    <string name="error_invalid_phone">Ingresa un número de teléfono válido</string>
+    <string name="error_location_unavailable">No se pudo obtener la ubicación</string>
+    <string name="auth_error">AuthError: %1$s</string>
+    <string name="generic_error">Error: %1$s</string>
+    <string name="error_ubicacion">No se pudo obtener la ubicación</string>
 </resources>

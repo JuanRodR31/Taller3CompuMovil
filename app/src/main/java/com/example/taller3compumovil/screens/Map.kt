@@ -19,6 +19,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.taller3compumovil.R
 import com.example.taller3compumovil.viewModel.FirebaseViewModel
@@ -42,14 +44,17 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 
 @Composable
 fun MapScreen(
     navToProfile: () -> Unit,
     navLogout: () -> Unit,
-    viewModel: FirebaseViewModel
+    viewModel: FirebaseViewModel,
+    modifier: Modifier
 ) {
     val context = LocalContext.current
     val currentUserState by viewModel.uiState.collectAsState()
@@ -60,8 +65,10 @@ fun MapScreen(
     val cameraPositionState = rememberCameraPositionState()
     val onlineUsers by viewModel.onlineUsers.collectAsState()
 
-    // Cargar ubicación inicial
-    LaunchedEffect (currentLocation) {
+    // Para formatear fecha en snippet
+    val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()) }
+
+    LaunchedEffect(currentLocation) {
         currentLocation?.let {
             cameraPositionState.position = CameraPosition.fromLatLngZoom(
                 LatLng(it.latitude, it.longitude),
@@ -70,7 +77,6 @@ fun MapScreen(
         }
     }
 
-    // Actualizar estado online y ubicación
     LaunchedEffect(isLocationOn) {
         viewModel.updateOnlineStatus(isLocationOn)
         if (isLocationOn) {
@@ -81,20 +87,31 @@ fun MapScreen(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(10.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Botones de navegación
+        Spacer(Modifier.height(24.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            Button(onClick = navToProfile) { Text("Editar perfil") }
+            Button(onClick = navToProfile) {
+                Text(text = stringResource(id = R.string.edit_profile))
+            }
             Spacer(Modifier.width(30.dp))
-            Button(onClick = navLogout) { Text("Cerrar sesión") }
+            Button(
+                onClick = {
+                    isLocationOn = false
+                    navLogout()
+                }
+            ) {
+                Text(text = stringResource(id = R.string.logout))
+            }
         }
+        Spacer(Modifier.height(24.dp))
 
-        // Mapa
         GoogleMap(
             modifier = Modifier.fillMaxSize(0.7f),
             cameraPositionState = cameraPositionState,
@@ -106,36 +123,33 @@ fun MapScreen(
             )
         ) {
             onlineUsers.forEach { user ->
-                    val lastPosition = user.mapPosition.lastOrNull()
-                    lastPosition?.let {
-                        // Marcador
-                        Marker(
-                            state = MarkerState(LatLng(it.latitude, it.longitude)),
-                            title = "Usuario ${user.fullName}",
-                            snippet = "Última actualización: ${Date()}"
-                        )
-
-                        // Polilínea
-                        val path = user.mapPosition.map { pos ->
-                            LatLng(pos.latitude, pos.longitude)
-                        }
-                        if (path.size > 1) {
-                            Polyline(
-                                points = path,
-                                color = Color.Red,
-                                width = 5f
-                            )
-                        }
+                val lastPosition = user.mapPosition.lastOrNull()
+                lastPosition?.let {
+                    Marker(
+                        state = MarkerState(LatLng(it.latitude, it.longitude)),
+                        title = stringResource(id = R.string.user_title, user.fullName),
+                        snippet = stringResource(id = R.string.last_update, dateFormatter.format(Date()))
+                    )
+                    val path = user.mapPosition.map { pos ->
+                        LatLng(pos.latitude, pos.longitude)
                     }
-
+                    if (path.size > 1) {
+                        Polyline(
+                            points = path,
+                            color = Color.Red,
+                            width = 5f
+                        )
+                    }
+                }
             }
         }
 
-        // Control de ubicación
+        Spacer(Modifier.height(24.dp))
+
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
                 imageVector = Icons.Filled.LocationOn,
-                contentDescription = "Ubicación",
+                contentDescription = stringResource(id = R.string.location),
                 tint = if (isLocationOn) Color.Green else Color.Red,
                 modifier = Modifier.size(48.dp)
             )
@@ -149,6 +163,12 @@ fun MapScreen(
                     uncheckedTrackColor = Color.Red.copy(alpha = 0.5f)
                 )
             )
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            isLocationOn = false
         }
     }
 }

@@ -1,15 +1,7 @@
 package com.example.taller3compumovil.screens
 
 import android.widget.Toast
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -18,29 +10,20 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.example.taller3compumovil.viewModel.FirebaseViewModel
+import com.example.taller3compumovil.R
 
 @Composable
 fun ProfileScreen(
@@ -51,14 +34,12 @@ fun ProfileScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // Estados para edición de perfil
     var name by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
     var isEditingProfile by remember { mutableStateOf(false) }
     var isNameError by remember { mutableStateOf(false) }
     var isPhoneError by remember { mutableStateOf(false) }
 
-    // Estados para cambio de contraseña
     var isEditingPassword by remember { mutableStateOf(false) }
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
@@ -76,13 +57,17 @@ fun ProfileScreen(
         phone = uiState.userProfile.phone.takeIf { it != 0L }?.toString() ?: ""
     }
 
-    Box(modifier = modifier.fillMaxSize()
-        .padding(27.dp)) {
+    Box(modifier = modifier.fillMaxSize().padding(27.dp)
+    ) {
         IconButton(
             onClick = { navController.popBackStack() },
             modifier = Modifier.align(Alignment.TopStart).padding(8.dp)
         ) {
-            Icon(Icons.Default.ArrowBack, "Regresar", tint = MaterialTheme.colorScheme.onSurface)
+            Icon(
+                Icons.Default.ArrowBack,
+                contentDescription = stringResource(R.string.back),
+                tint = MaterialTheme.colorScheme.onSurface
+            )
         }
 
         Column(
@@ -91,27 +76,26 @@ fun ProfileScreen(
         ) {
             AsyncImage(
                 model = uiState.userProfile.photoUrl.takeIf { it.isNotEmpty() },
-                contentDescription = "Foto de perfil",
+                contentDescription = stringResource(R.string.profile_photo),
                 modifier = Modifier.size(120.dp).clip(CircleShape)
             )
 
             Spacer(Modifier.height(24.dp))
 
-            // Sección de perfil
             OutlinedTextField(
                 value = name,
                 onValueChange = {
                     name = it
                     isNameError = it.isBlank() || it.length > 50
                 },
-                label = { Text("Nombre completo") },
+                label = { Text(stringResource(R.string.full_name)) },
                 singleLine = true,
                 isError = isNameError,
-                enabled = isEditingProfile && !isLoading,  // Corregido aquí
+                enabled = isEditingProfile && !isLoading,
                 leadingIcon = { Icon(Icons.Default.Person, null) },
                 modifier = Modifier.fillMaxWidth()
             )
-            if (isNameError) Text("Nombre requerido (máx. 50)", color = MaterialTheme.colorScheme.error)
+            if (isNameError) Text(stringResource(R.string.name_error), color = MaterialTheme.colorScheme.error)
 
             Spacer(Modifier.height(16.dp))
 
@@ -121,15 +105,15 @@ fun ProfileScreen(
                     phone = it.filter { c -> c.isDigit() }
                     isPhoneError = phone.isNotEmpty() && (phone.length < 7 || phone.length > 15)
                 },
-                label = { Text("Teléfono") },
+                label = { Text(stringResource(R.string.phone)) },
                 singleLine = true,
                 isError = isPhoneError,
-                enabled = isEditingProfile && !isLoading,  // Corregido aquí
+                enabled = isEditingProfile && !isLoading,
                 leadingIcon = { Icon(Icons.Default.Phone, null) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 modifier = Modifier.fillMaxWidth()
             )
-            if (isPhoneError) Text("Teléfono inválido (7-15)", color = MaterialTheme.colorScheme.error)
+            if (isPhoneError) Text(stringResource(R.string.phone_error), color = MaterialTheme.colorScheme.error)
 
             Spacer(Modifier.height(16.dp))
 
@@ -143,16 +127,16 @@ fun ProfileScreen(
                         )) { error ->
                             isLoading = false
                             if (error == null) {
-                                Toast.makeText(context, "Perfil actualizado", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.profile_updated), Toast.LENGTH_SHORT).show()
                                 isEditingProfile = false
                             } else {
-                                Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, "${context.getString(R.string.error)}: ${error.message}", Toast.LENGTH_LONG).show()
                             }
                         }
                     },
                     enabled = !isNameError && !isPhoneError,
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("Guardar") }
+                ) { Text(stringResource(R.string.save)) }
 
                 Button(
                     onClick = {
@@ -161,17 +145,16 @@ fun ProfileScreen(
                         phone = uiState.userProfile.phone.takeIf { it != 0L }?.toString() ?: ""
                     },
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("Cancelar") }
+                ) { Text(stringResource(R.string.cancel)) }
             } else {
                 Button(
                     onClick = { isEditingProfile = true },
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("Editar perfil") }
+                ) { Text(stringResource(R.string.edit_profile)) }
             }
 
             Spacer(Modifier.height(32.dp))
 
-            // Sección de contraseña
             if (isEditingPassword) {
                 OutlinedTextField(
                     value = currentPassword,
@@ -179,12 +162,12 @@ fun ProfileScreen(
                         currentPassword = it
                         isCurrentPasswordError = it.isBlank()
                     },
-                    label = { Text("Contraseña actual") },
+                    label = { Text(stringResource(R.string.current_password)) },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     modifier = Modifier.fillMaxWidth()
                 )
-                if (isCurrentPasswordError) Text("Campo obligatorio", color = MaterialTheme.colorScheme.error)
+                if (isCurrentPasswordError) Text(stringResource(R.string.required_field), color = MaterialTheme.colorScheme.error)
 
                 OutlinedTextField(
                     value = newPassword,
@@ -192,12 +175,12 @@ fun ProfileScreen(
                         newPassword = it
                         isNewPasswordError = it.isNotBlank() && it.length < 6
                     },
-                    label = { Text("Nueva contraseña") },
+                    label = { Text(stringResource(R.string.new_password)) },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     modifier = Modifier.fillMaxWidth()
                 )
-                if (isNewPasswordError) Text("Mínimo 6 caracteres", color = MaterialTheme.colorScheme.error)
+                if (isNewPasswordError) Text(stringResource(R.string.min_6_chars), color = MaterialTheme.colorScheme.error)
 
                 OutlinedTextField(
                     value = confirmPassword,
@@ -205,12 +188,12 @@ fun ProfileScreen(
                         confirmPassword = it
                         isConfirmPasswordError = it != newPassword
                     },
-                    label = { Text("Confirmar contraseña") },
+                    label = { Text(stringResource(R.string.confirm_password)) },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     modifier = Modifier.fillMaxWidth()
                 )
-                if (isConfirmPasswordError) Text("No coinciden", color = MaterialTheme.colorScheme.error)
+                if (isConfirmPasswordError) Text(stringResource(R.string.passwords_do_not_match), color = MaterialTheme.colorScheme.error)
 
                 Spacer(Modifier.height(16.dp))
 
@@ -221,20 +204,20 @@ fun ProfileScreen(
                             viewModel.updatePassword(currentPassword, newPassword) { error ->
                                 isLoading = false
                                 if (error == null) {
-                                    Toast.makeText(context, "Contraseña actualizada", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.getString(R.string.password_updated), Toast.LENGTH_SHORT).show()
                                     isEditingPassword = false
                                     currentPassword = ""
                                     newPassword = ""
                                     confirmPassword = ""
                                 } else {
-                                    Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, "${context.getString(R.string.error)}: ${error.message}", Toast.LENGTH_LONG).show()
                                 }
                             }
                         }
                     },
                     enabled = !isCurrentPasswordError && !isNewPasswordError && !isConfirmPasswordError,
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("Guardar contraseña") }
+                ) { Text(stringResource(R.string.save_password)) }
 
                 Button(
                     onClick = {
@@ -244,12 +227,12 @@ fun ProfileScreen(
                         confirmPassword = ""
                     },
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("Cancelar") }
+                ) { Text(stringResource(R.string.cancel)) }
             } else {
                 Button(
                     onClick = { isEditingPassword = true },
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("Cambiar contraseña") }
+                ) { Text(stringResource(R.string.change_password)) }
             }
         }
     }

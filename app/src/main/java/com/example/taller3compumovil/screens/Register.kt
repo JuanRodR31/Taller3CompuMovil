@@ -73,7 +73,8 @@ import com.google.android.gms.maps.model.LatLng
 @Composable
 fun registerScreen(onRegisterSuccess: () -> Unit,
                    onAlreadyHasAccount: () -> Unit,
-                   viewModel: FirebaseViewModel) {
+                   viewModel: FirebaseViewModel,
+                   modifier: Modifier) {
     var userFullName by remember { mutableStateOf("") }
     var userEmail by remember { mutableStateOf("") }
     var userPhone by remember { mutableStateOf(0) }
@@ -101,7 +102,7 @@ fun registerScreen(onRegisterSuccess: () -> Unit,
     if (!locationPermissionGranted) {
         NoLocationPermissionMessage(
             shouldShowRationale = locationPermissionState.status.shouldShowRationale,
-            message = "La aplicación necesita tu ubicación para registrarte correctamente.",
+            message =  context.getString(R.string.error_location_unavailable),
             onRequestPermission = {
                 locationPermissionState.launchPermissionRequest()
             }
@@ -111,7 +112,7 @@ fun registerScreen(onRegisterSuccess: () -> Unit,
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
-                .padding(10.dp)
+                .padding(12.dp)
                 .verticalScroll(scrollState)
         ) {
             Text(
@@ -128,7 +129,6 @@ fun registerScreen(onRegisterSuccess: () -> Unit,
                     hasProfilePic = true
                 }
             }
-            Spacer(modifier = Modifier.height(10.dp))
             Text(
                 stringResource(R.string.full_name_title),
                 style = TextStyle(
@@ -146,7 +146,7 @@ fun registerScreen(onRegisterSuccess: () -> Unit,
                 isError = isUserFullNameError,
                 supportingText = {
                     if (isUserFullNameError) {
-                        Text("Ingresa un nombre completo")
+                        Text(stringResource(R.string.error_full_name_required))
                     }
                 },
                 singleLine = true
@@ -169,7 +169,7 @@ fun registerScreen(onRegisterSuccess: () -> Unit,
                 isError = isEmailError,
                 supportingText = {
                     if (isEmailError) {
-                        Text("Ingresa un email válido")
+                        Text(stringResource(R.string.error_invalid_email))
                     }
                 },
                 singleLine = true
@@ -201,7 +201,7 @@ fun registerScreen(onRegisterSuccess: () -> Unit,
                 isError = isPhoneError,
                 supportingText = {
                     if (isPhoneError) {
-                        Text("Ingresa un número de teléfono válido")
+                        Text(stringResource(R.string.error_invalid_phone))
                     }
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
@@ -310,9 +310,10 @@ fun registerScreen(onRegisterSuccess: () -> Unit,
                             } else {
                                 Toast.makeText(
                                     context,
-                                    "No se pudo obtener la ubicación",
+                                    context.getString(R.string.error_ubicacion),
                                     Toast.LENGTH_LONG
                                 ).show()
+
                                 isLoading = false
                             }
                         }
